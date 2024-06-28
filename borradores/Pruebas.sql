@@ -271,8 +271,9 @@ VALUES (2, 'Consuelo', 'Duarte', '1965-04-20', 'consueloddg@hotmail.com', 391291
 
 -- Creacion de tabla pensum
 CREATE TABLE `pensum` (
-  `pen_id` int NOT NULL,
+  `pen_id` int NOT NULL,`pen_id`
   `pen_idCurso` int NOT NULL,
+  `pen_Carrera` int NOT NULL,
   `pen_Nombre` varchar(45) NOT NULL,
   `pen_CreditosNecesarios` int NOT NULL,
   `pen_CreditosOtorgados` int NOT NULL,

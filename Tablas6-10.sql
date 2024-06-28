@@ -53,6 +53,13 @@ CREATE TABLE horario (
   CONSTRAINT `idPerio` FOREIGN KEY (`hor_seccion`) REFERENCES `seccion` (`sec_id`)
 );
 
+-- Crear tabla periodo
+CREATE TABLE periodo (
+  `per_id` INT NOT NULL AUTO_INCREMENT,
+  `horas` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`per_id`)
+);
+
 DELIMITER //
 
 CREATE TRIGGER vali_horario

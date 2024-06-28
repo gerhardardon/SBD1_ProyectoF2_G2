@@ -126,7 +126,7 @@ DELIMITER ;
 
 
 
--- Crear la tabla estudiantes
+-- Crear la tabla docentes
 CREATE TABLE `docente` (
   `doc_id` int NOT NULL,
   `doc_Nombres` varchar(45) NOT NULL,
