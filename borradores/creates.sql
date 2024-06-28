@@ -120,7 +120,7 @@ CREATE TABLE desasignar (
   CONSTRAINT `fk_des_seccion` FOREIGN KEY (`des_seccion`) REFERENCES `seccion` (`sec_id`),
   CONSTRAINT `fk_des_estudiante` FOREIGN KEY (`des_carnet`) REFERENCES `estudiantes` (`est_Carnet`)
 );
-
+ 
 
 CREATE TABLE periodo (
   `per_id` INT NOT NULL AUTO_INCREMENT,
@@ -134,4 +134,4 @@ CREATE TABLE transacciones (
   tabla VARCHAR(50) NOT NULL,
   operacion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
   PRIMARY KEY (id)
-);
+); 

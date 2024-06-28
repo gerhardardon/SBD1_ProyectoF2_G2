@@ -25,4 +25,4 @@ BEGIN
   VALUES ('prerrequisito', 'DELETE');
 END//
 
-DELIMITER ;
+DELIMITER ; 

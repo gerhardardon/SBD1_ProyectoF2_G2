@@ -155,7 +155,7 @@ END //
 
 DELIMITER ;
 
-
+ 
 -- Insertar un estudiante con datos válidos
 INSERT INTO estudiantes (est_Carnet, est_Nombres, est_Apellidos, est_FechaNacimiento, est_Correo, est_Telefono, est_Direccion, est_Dpi, est_FechaRegistro, est_Carrera, est_Plan)
 VALUES (1, 'Nataly', 'Guzman', '2000-06-10', 'natalyguzman7777@gmail.com', 40615221, 'Zona 7 Guatemala', 121412518129, '2020-01-01', 1, 1);

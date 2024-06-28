@@ -372,7 +372,7 @@ SELECT
 FROM
     docente d;
 
-END //
+END // 
 DELIMITER ;
 
 -- REGISTRO -----------------------------------
