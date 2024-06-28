@@ -1,6 +1,31 @@
 CREATE DATABASE  IF NOT EXISTS `Proyecto`;
 USE `Proyecto`;
 
+-- Crear la tabla plan
+CREATE TABLE plan (
+  pla_id INT NOT NULL AUTO_INCREMENT,
+  pla_plan VARCHAR(15) NOT NULL,
+  PRIMARY KEY (pla_id)
+);
+
+DELIMITER //
+
+CREATE TRIGGER vali_plan
+BEFORE INSERT ON plan
+FOR EACH ROW
+BEGIN
+    DECLARE error_msg VARCHAR(255);
+
+    -- Validar que el ciclo sea uno de los valores dados
+    IF NEW.pla_plan NOT IN ('matutina', 'vespertina', 'Matutina', 'Vespertina') THEN
+        SET error_msg = 'El campo de plan no es de los valores aceptados.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
+    END IF;
+
+END //
+
+DELIMITER ;
+
 -- Crear la tabla carrera
 CREATE TABLE carrera (
   car_id INT NOT NULL AUTO_INCREMENT,
@@ -44,7 +69,8 @@ CREATE TABLE `estudiantes` (
   `est_Plan` int NOT NULL,
   PRIMARY KEY (`est_Carnet`),
   KEY `idCarrer_idx` (`est_Carrera`),
-  CONSTRAINT `idCarrer` FOREIGN KEY (`est_Carrera`) REFERENCES `carrera` (`car_id`)
+  CONSTRAINT `idCarrer` FOREIGN KEY (`est_Carrera`) REFERENCES `carrera` (`car_id`),
+  CONSTRAINT `idPlan` FOREIGN KEY (`est_Plan`) REFERENCES `plan` (`pla_id`)
 );
 
 DELIMITER //
@@ -55,6 +81,7 @@ FOR EACH ROW
 BEGIN
     DECLARE error_msg VARCHAR(255);
     DECLARE v_valid_carrera INT;
+    DECLARE v_valid_plan INT;
 
     -- Validar que los nombres solo contengan letras y espacios
     IF NEW.est_Nombres NOT REGEXP '^[a-zA-Z\s]+$' THEN
@@ -86,9 +113,17 @@ BEGIN
         SET error_msg = 'La carrera no existe.';
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
     END IF;
+
+    -- Validar existencia del plan
+    SELECT COUNT(*) INTO v_valid_plan FROM plan WHERE pla_id = NEW.est_Plan;
+    IF v_valid_plan = 0 THEN
+        SET error_msg = 'El plan no existe.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
+    END IF;
 END //
 
 DELIMITER ;
+
 
 
 -- Crear la tabla estudiantes
@@ -159,15 +194,18 @@ DELIMITER ;
 
 -- Creacion de tabla pensum
 CREATE TABLE `pensum` (
-  `pen_id` int NOT NULL,
+  `pen_id` int NOT NULL AUTO_INCREMENT,
   `pen_idCurso` int NOT NULL,
   `pen_Nombre` varchar(45) NOT NULL,
   `pen_CreditosNecesarios` int NOT NULL,
   `pen_CreditosOtorgados` int NOT NULL,
   `pen_Obligatorio` tinyint NOT NULL,
   `pen_Plan` int NOT NULL,
-  PRIMARY KEY (`pen_id`)
+  PRIMARY KEY (`pen_id`),
+  CONSTRAINT `fk_idCurso` FOREIGN KEY (`pen_idCurso`) REFERENCES `curso` (`cur_id`),
+  CONSTRAINT `fk_Plan` FOREIGN KEY (`pen_Plan`) REFERENCES `plan` (`pla_id`)
 );
+
 
 DELIMITER //
 
@@ -175,17 +213,33 @@ CREATE TRIGGER vali_pensum
 BEFORE INSERT ON pensum
 FOR EACH ROW
 BEGIN
-    DECLARE error_msg VARCHAR(255);  -- Declarar la variable error_msg
+    DECLARE error_msg VARCHAR(255);
+    DECLARE v_valid_curso INT;
+    DECLARE v_valid_plan INT;
 
     -- Validar que el crédito necesario sea positivo 
-    IF NEW.pen_CreditosNecesarios <= 0  THEN
+    IF NEW.pen_CreditosNecesarios <= 0 THEN
         SET error_msg = 'El campo de créditos necesarios debe ser un número positivo.';
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
     END IF;
 
     -- Validar que el crédito otorgado sea positivo 
-    IF NEW.pen_CreditosOtorgados <= 0  THEN
+    IF NEW.pen_CreditosOtorgados <= 0 THEN
         SET error_msg = 'El campo de créditos otorgados debe ser un número positivo.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
+    END IF;
+
+    -- Validar existencia del curso
+    SELECT COUNT(*) INTO v_valid_curso FROM curso WHERE cur_id = NEW.pen_idCurso;
+    IF v_valid_curso = 0 THEN
+        SET error_msg = 'El curso no existe.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
+    END IF;
+
+    -- Validar existencia del plan
+    SELECT COUNT(*) INTO v_valid_plan FROM plan WHERE pla_id = NEW.pen_Plan;
+    IF v_valid_plan = 0 THEN
+        SET error_msg = 'El plan no existe.';
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
     END IF;
 
@@ -193,10 +247,38 @@ END //
 
 DELIMITER ;
 
-
 CREATE TABLE `prerrequisito` (
-  `pre_id` int NOT NULL,
+  `pre_id` int NOT NULL AUTO_INCREMENT,
   `pre_idCurso` int NOT NULL,
   `pre_idCursoPre` int NOT NULL,
-  PRIMARY KEY (`pre_id`)
+  PRIMARY KEY (`pre_id`),
+  CONSTRAINT `fk_pre_idCurso` FOREIGN KEY (`pre_idCurso`) REFERENCES `curso` (`cur_id`),
+  CONSTRAINT `fk_pre_idCursoPre` FOREIGN KEY (`pre_idCursoPre`) REFERENCES `curso` (`cur_id`)
 );
+
+DELIMITER //
+
+CREATE TRIGGER vali_prerrequisito
+BEFORE INSERT ON prerrequisito
+FOR EACH ROW
+BEGIN
+    DECLARE error_msg VARCHAR(255);
+    DECLARE v_valid_curso INT;
+    DECLARE v_valid_curso_pre INT;
+
+    -- Validar existencia del curso principal
+    SELECT COUNT(*) INTO v_valid_curso FROM curso WHERE cur_id = NEW.pre_idCurso;
+    IF v_valid_curso = 0 THEN
+        SET error_msg = 'El curso especificado no existe.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
+    END IF;
+
+    -- Validar existencia del curso prerrequisito
+    SELECT COUNT(*) INTO v_valid_curso_pre FROM curso WHERE cur_id = NEW.pre_idCursoPre;
+    IF v_valid_curso_pre = 0 THEN
+        SET error_msg = 'El curso prerrequisito especificado no existe.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_msg;
+    END IF;
+END //
+
+DELIMITER ;
